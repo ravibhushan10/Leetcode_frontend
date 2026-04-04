@@ -9,7 +9,7 @@ async function sendViaResend({ to, subject, html }) {
     throw new Error('RESEND_API_KEY is not set in environment variables.');
   }
 
-  const from = `"CodeForge" <${process.env.EMAIL_FROM || 'onboarding@resend.dev'}>`;
+  const from = process.env.EMAIL_FROM || 'onboarding@resend.dev';
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
