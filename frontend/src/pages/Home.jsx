@@ -60,7 +60,7 @@ function Landing() {
   const stats = [
     { val: '160', suffix: '+',label: 'Problems' },
     { val: '5',    label: 'Languages' },
-    { val: '500',suffix: '+', label: 'Companies' },
+    { val: '10',suffix: '+', label: 'Companies' },
     { val: '99',  suffix: '%',label: 'Satisfaction' },
   ];
 
