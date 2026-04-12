@@ -4,34 +4,45 @@ A modern, full-stack competitive coding platform with **AI-powered tutoring**, r
 
 ---
 
+
 ## 📸 Screenshots
 
 <table align="center">
   <tr>
     <td align="center">
-      <em>Landing / Hero</em>
+      <img src="screenshots/fornt.png" ><br/>
+      <em>Home Page</em>
     </td>
     <td align="center">
-      <em>Problem Solver</em>
+      <img src="screenshots/first.png" ><br/>
+      <em>Sign up section</em>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <em>Dashboard (ML Insights)</em>
+      <img src="screenshots/second.png" ><br/>
+      <em>Login section</em>
     </td>
     <td align="center">
-      <em>Leaderboard</em>
+      <img src="screenshots/third.png"><br/>
+      <em>Toggle theme</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="screenshots/fourth.png" ><br/>
+      <em>Resume creation</em>
+    </td>
+     <td align="center">
+      <img src="screenshots/fifth.png" ><br/>
+      <em>Download Resume</em>
     </td>
   </tr>
 </table>
 
 ---
 
-## 🌐 Live Demo
-
-👉 [codeforgeai.in](https://codeforgeai.in)
-
----
+## 🌐 [Live Demo](https://codeforgeai.in)
 
 ## 🌟 Features
 
@@ -92,7 +103,7 @@ A modern, full-stack competitive coding platform with **AI-powered tutoring**, r
 
 ## 🛠️ Technologies Used
 
-### Frontend (client/)
+### Frontend 
 
 | Technology             | Purpose                        | Version  |
 |------------------------|--------------------------------|----------|
@@ -106,7 +117,7 @@ A modern, full-stack competitive coding platform with **AI-powered tutoring**, r
 | React Helmet Async     | SEO & Meta Tags                | 3+       |
 | CSS Modules            | Component-scoped Styling       | —        |
 
-### Backend (backend/)
+### Backend 
 
 | Technology          | Purpose                        | Version |
 |---------------------|--------------------------------|---------|
@@ -125,7 +136,7 @@ A modern, full-stack competitive coding platform with **AI-powered tutoring**, r
 | cookie-parser       | HTTP Cookie Parsing            | 1+      |
 | express-rate-limit  | API Rate Limiting              | 8+      |
 
-### Admin Panel (admin/)
+### Admin Panel 
 
 | Technology | Purpose         | Version |
 |------------|-----------------|---------|
@@ -159,7 +170,7 @@ A modern, full-stack competitive coding platform with **AI-powered tutoring**, r
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/codeforge.git
+   git clone https://github.com/ravibhushan10/CodeforgeAI.git
    cd codeforge
    ```
 
@@ -171,13 +182,13 @@ A modern, full-stack competitive coding platform with **AI-powered tutoring**, r
 
 3. **Install Frontend Dependencies**
    ```bash
-   cd ../frontend
+   cd frontend
    npm install
    ```
 
 4. **Install Admin Dependencies**
    ```bash
-   cd ../admin
+   cd admin
    npm install
    ```
 
@@ -389,8 +400,8 @@ codeforge/
 
 **Ravi Bhushan**
 
-- 🌐 Portfolio: [ravibhushan-portfolio.vercel.app](https://ravibhushan-portfolio.vercel.app)
-- 💼 LinkedIn: [linkedin.com/in/ravibhushan-kumar](https://www.linkedin.com/in/ravibhushan-kumar/)
+- 💼 LinkedIn: [https://www.linkedin.com/in/ravibhushan-kumar-55b312344](https://www.linkedin.com/in/ravibhushan-kumar-55b312344/)
+-  🌐 Portfolio: [https://ravibhushan-portfolio.vercel.app](https://ravibhushan-portfolio.vercel.app)
 - 🐙 GitHub: [@ravibhushan10](https://github.com/ravibhushan10)
 - 📧 Email: ravibhushankumar87tp@gmail.com
 
@@ -402,6 +413,6 @@ codeforge/
 
 **Made with ❤️ by Ravi Bhushan**
 
-[Live Demo](https://codeforgeai.in) · [Report Bug](https://github.com/ravibhushan10/codeforge/issues) · [Request Feature](https://github.com/ravibhushan10/codeforge/issues)
+[Live Demo](https://codeforgeai.in) · [Report Bug](https://github.com/ravibhushan10/CodeforgeAI/issues) · [Request Feature](https://github.com/ravibhushan10/CodeforgeAI/issues)
 
 </div>
