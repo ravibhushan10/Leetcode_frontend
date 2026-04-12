@@ -10,32 +10,44 @@ A modern, full-stack competitive coding platform with **AI-powered tutoring**, r
 <table align="center">
   <tr>
     <td align="center">
-      <img src="screenshots/fornt.png" ><br/>
+      <img src="screenshots/Home.png" ><br/>
       <em>Home Page</em>
     </td>
     <td align="center">
-      <img src="screenshots/first.png" ><br/>
-      <em>Sign up section</em>
+      <img src="screenshots/Sign.png" ><br/>
+      <em>Sign Up</em>
+    </td>
+    <td align="center">
+      <img src="screenshots/Verification.png" ><br/>
+      <em>Email Verification</em>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshots/second.png" ><br/>
-      <em>Login section</em>
+      <img src="screenshots/Email.png"><br/>
+      <em>Email Verification</em>
     </td>
-    <td align="center">
-      <img src="screenshots/third.png"><br/>
-      <em>Toggle theme</em>
+      <td align="center">
+      <img src="screenshots/Problem.png"><br/>
+      <em>Problem List</em>
+    </td>
+      <td align="center">
+      <img src="screenshots/Solve.png"><br/>
+      <em>Solve Page</em>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="screenshots/fourth.png" ><br/>
-      <em>Resume creation</em>
+      <img src="screenshots/AI.png" ><br/>
+      <em>AI suggestion</em>
+    </td>
+      <td align="center">
+      <img src="screenshots/Profile.png"><br/>
+      <em>Profile Page</em>
     </td>
      <td align="center">
-      <img src="screenshots/fifth.png" ><br/>
-      <em>Download Resume</em>
+      <img src="screenshots/Help.png" ><br/>
+      <em>Help Page</em>
     </td>
   </tr>
 </table>
@@ -428,16 +440,6 @@ codeforge/
      - **Related issues**: e.g., "Fixes #12"
    - Click **"Create pull request"**
 
----
-
-## 👨‍💻 Author
-
-**Ravi Bhushan**
-
-- 💼 LinkedIn: [https://www.linkedin.com/in/ravibhushan-kumar-55b312344](https://www.linkedin.com/in/ravibhushan-kumar-55b312344/)
--  🌐 Portfolio: [https://ravibhushan-portfolio.vercel.app](https://ravibhushan-portfolio.vercel.app)
-- 🐙 GitHub: [@ravibhushan10](https://github.com/ravibhushan10)
-- 📧 Email: ravibhushankumar87tp@gmail.com
 
 ---
 
@@ -452,6 +454,16 @@ codeforge/
 - [ ] PWA with offline support
 - [ ] Email digest of recommended problems
 
+---
+
+## 👨‍💻 Author
+
+**Ravi Bhushan**
+
+- 💼 LinkedIn: [https://www.linkedin.com/in/ravibhushan-kumar-55b312344](https://www.linkedin.com/in/ravibhushan-kumar-55b312344/)
+-  🌐 Portfolio: [https://ravibhushan-portfolio.vercel.app](https://ravibhushan-portfolio.vercel.app)
+- 🐙 GitHub: [@ravibhushan10](https://github.com/ravibhushan10)
+- 📧 Email: ravibhushankumar87tp@gmail.com
 ---
 <div align="center">
 
