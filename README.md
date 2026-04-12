@@ -382,17 +382,7 @@ codeforge/
 | POST   | `/api/payments/webhook`    | Razorpay webhook handler     |
 | GET    | `/api/payments/status`     | Get user's subscription status|
 
----
 
-## 🔮 Planned Improvements
-
-- [ ] Contests with real-time leaderboard updates
-- [ ] Discussion forum per problem
-- [ ] Editorial / official solution after solve
-- [ ] Code execution via self-hosted Judge0 instance
-- [ ] Multi-language i18n support
-- [ ] PWA with offline support
-- [ ] Email digest of recommended problems
 
 ---
 ## 🤝 Contributing
@@ -451,6 +441,18 @@ codeforge/
 
 ---
 
+
+## 🔮 Planned Improvements
+
+- [ ] Contests with real-time leaderboard updates
+- [ ] Discussion forum per problem
+- [ ] Editorial / official solution after solve
+- [ ] Code execution via self-hosted Judge0 instance
+- [ ] Multi-language i18n support
+- [ ] PWA with offline support
+- [ ] Email digest of recommended problems
+
+---
 <div align="center">
 
 ### ⭐ Star this repository if it helped you!
