@@ -70,7 +70,6 @@ mongoose.connect(process.env.MONGODB_URI)
     try {
       await User.syncIndexes();
       await Problem.syncIndexes();
-      console.log(' Indexes synced');
     } catch (e) {
       console.warn('  Index sync warning:', e.message);
     }

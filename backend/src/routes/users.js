@@ -13,10 +13,6 @@ import {
 
 const router = express.Router();
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
 function makeAccessToken(user) {
   return jwt.sign(
     { id: user._id, email: user.email, plan: user.plan, isAdmin: user.isAdmin },
@@ -33,21 +29,12 @@ function makeRefreshToken(user) {
   );
 }
 
-// Helper to build cookie options — keeps all 4 clearCookie calls consistent
 function cookieOptions() {
   const isProd = process.env.NODE_ENV === 'production';
   return {
     httpOnly: true,
     secure:   isProd,
-    // FIX: In production the frontend and backend are almost always on different
-    // origins (e.g. app.vercel.app vs api.render.com). Browsers block cross-origin
-    // cookies unless sameSite is 'none' AND secure is true (HTTPS). The original
-    // code set this correctly on SET but forgot to pass the same options to
-    // clearCookie — so logout/refresh never actually deleted the cookie in prod.
     sameSite: isProd ? 'none' : 'lax',
-    // FIX: Without an explicit path, the cookie is scoped to the path of the
-    // response that set it (e.g. /api/users/login). Requests to /api/users/refresh
-    // then don't send it. Always set path:'/' so it's sent globally.
     path:     '/',
   };
 }
@@ -108,9 +95,8 @@ function remainingLoginAttempts(ip) {
   return Math.max(0, 10 - recent.length);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // REGISTER  POST /api/users/register
-// ─────────────────────────────────────────────────────────────────────────────
+
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;

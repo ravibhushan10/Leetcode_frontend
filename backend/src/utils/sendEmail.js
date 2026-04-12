@@ -1,5 +1,3 @@
-// sendEmail.js — uses Resend HTTP API in production (port 443, never blocked)
-// and Gmail SMTP in development.
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -87,13 +85,10 @@ async function send({ to, subject, html }) {
   }
 }
 
-// Startup check for production
 if (isProd) {
   if (!process.env.RESEND_API_KEY) {
     console.error('❌ RESEND_API_KEY is not set — emails will NOT send in production.');
     console.error('   → Sign up at resend.com, create an API key, set RESEND_API_KEY in Render env vars.');
-  } else {
-    console.log('✅ Email ready via Resend HTTP API (production)');
   }
 }
 
