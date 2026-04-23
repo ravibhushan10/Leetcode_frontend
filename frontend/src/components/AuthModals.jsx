@@ -6,8 +6,6 @@ import { useAuth } from '../hooks/useAuth.js';
 import styles from './AuthModals.module.css';
 
 
-
-
 export default function AuthModals({
   showLogin, onCloseLogin,
   showRegister, onCloseRegister,
@@ -20,8 +18,6 @@ export default function AuthModals({
     </>
   );
 }
-
-
 
 
 function EyeOpen() {
@@ -62,8 +58,6 @@ function GitHubIcon() {
 }
 
 
-
-
 function Banner({ error, onGoogle, onGitHub, onSwitchToRegister, onSwitchToLogin }) {
   if (!error) return null;
   const cls = error.code === 'RATE_LIMITED' ? styles.bannerWarning : styles.bannerError;
@@ -71,21 +65,19 @@ function Banner({ error, onGoogle, onGitHub, onSwitchToRegister, onSwitchToLogin
     <div className={`${styles.banner} ${cls}`}>
       <p className={styles.bannerMsg}>{error.message}</p>
       {error.hint === 'google' && (
-        <button type="button" className={styles.hintBtn} onClick={onGoogle}>Continue with Google </button>
+        <button type="button" className={styles.hintBtn} onClick={onGoogle}>Continue with Google →</button>
       )}
       {error.hint === 'github' && (
-        <button type="button" className={styles.hintBtn} onClick={onGitHub}>Continue with GitHub </button>
+        <button type="button" className={styles.hintBtn} onClick={onGitHub}>Continue with GitHub →</button>
       )}
-
       {error.hint === 'login' && (
-        <button type="button" className={styles.hintBtn} onClick={onSwitchToLogin}>Sign in instead </button>
+        <button type="button" className={styles.hintBtn} onClick={onSwitchToLogin}>Sign in instead →</button>
       )}
-
       {error.hint === 'register' && (
-        <button type="button" className={styles.hintBtn} onClick={onSwitchToRegister}>Create an account </button>
+        <button type="button" className={styles.hintBtn} onClick={onSwitchToRegister}>Create an account →</button>
       )}
       {error.action && (
-        <button type="button" className={styles.hintBtn} onClick={error.action.fn}>{error.action.label} </button>
+        <button type="button" className={styles.hintBtn} onClick={error.action.fn}>{error.action.label} →</button>
       )}
     </div>
   );
@@ -137,8 +129,6 @@ function PasswordChecklist({ password, showErrors }) {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 
-
-
 function OtpInput({ otp, setOtp, otpError, otpRefs }) {
   const handleChange = (i, val) => {
     if (!/^\d?$/.test(val)) return;
@@ -171,6 +161,51 @@ function OtpInput({ otp, setOtp, otpError, otpRefs }) {
 }
 
 
+function CooldownGate({ secondsLeft, onReady, onClose }) {
+  const [remaining, setRemaining] = useState(secondsLeft);
+
+  useEffect(() => {
+    if (remaining <= 0) { onReady(); return; }
+    const t = setTimeout(() => setRemaining(r => r - 1), 1000);
+    return () => clearTimeout(t);
+  }, [remaining, onReady]);
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{ textAlign: 'center' }}>
+        <button className="modal-close" onClick={onClose}>✕</button>
+
+        <div style={{
+          width: 64, height: 64, borderRadius: '50%',
+          border: '3px solid var(--green)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '8px auto 20px',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+            stroke="var(--green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+
+        <h2 style={{ marginBottom: 8 }}>Please wait</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '.875rem', marginBottom: 20 }}>
+          A code was recently sent. You can request a new one in:
+        </p>
+
+        <div style={{
+          fontSize: '2.2rem', fontWeight: 800,
+          fontFamily: 'var(--font-mono)',
+          color: 'var(--green)', marginBottom: 24,
+          letterSpacing: '.05em',
+        }}>
+          {remaining}s
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ResendHint({ resendCooldown }) {
   if (resendCooldown <= 0) return null;
   return (
@@ -181,11 +216,9 @@ function ResendHint({ resendCooldown }) {
 }
 
 
-
-
-
 function LoginModal({ onClose, onSwitch }) {
-  const { login, toast }                     = useApp();
+
+  const { login, toast, clearSession }       = useApp();
   const { loginWithGoogle, loginWithGitHub } = useAuth();
   const navigate = useNavigate();
 
@@ -205,10 +238,12 @@ function LoginModal({ onClose, onSwitch }) {
   const [resendDone,     setResendDone]     = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
 
+
   const [fpEmail,    setFpEmail]    = useState('');
   const [fpLoading,  setFpLoading]  = useState(false);
   const [fpError,    setFpError]    = useState('');
   const [fpCooldown, setFpCooldown] = useState(0);
+
 
   const [otp,               setOtp]              = useState(['', '', '', '', '', '']);
   const [otpLoading,        setOtpLoading]        = useState(false);
@@ -218,6 +253,10 @@ function LoginModal({ onClose, onSwitch }) {
   const [otpResendCooldown, setOtpResendCooldown] = useState(0);
   const otpRefs = useRef([]);
 
+  
+  const [gateCooldown, setGateCooldown] = useState(0);
+
+
   const [resetToken,    setResetToken]    = useState('');
   const [newPwd,        setNewPwd]        = useState('');
   const [newPwdShow,    setNewPwdShow]    = useState(false);
@@ -226,12 +265,13 @@ function LoginModal({ onClose, onSwitch }) {
   const [newPwdLoading, setNewPwdLoading] = useState(false);
   const [newPwdError,   setNewPwdError]   = useState('');
 
+
   useEffect(() => {
     if (screen !== 'otp' || !otpExpiry) return;
     const interval = setInterval(() => {
       const left = Math.max(0, Math.ceil((otpExpiry - Date.now()) / 1000));
       setOtpCountdown(left);
-      if (left === 0) clearInterval(interval);
+      if (left === 0) { setOtpResendCooldown(0); clearInterval(interval); }
     }, 1000);
     return () => clearInterval(interval);
   }, [screen, otpExpiry]);
@@ -290,14 +330,8 @@ function LoginModal({ onClose, onSwitch }) {
       } else if (code === 'USE_GITHUB') {
         setOauthError({ message: msg, code, hint: 'github' });
       } else if (code === 'USER_NOT_FOUND') {
-
-        setServerError({
-          message: 'No account found with this email.',
-          code,
-          hint: 'register',
-        });
+        setServerError({ message: 'No account found with this email.', code, hint: 'register' });
       } else if (code === 'WRONG_PASSWORD') {
-
         setFieldErrors({ password: msg });
       } else {
         setServerError({ message: msg, code });
@@ -322,9 +356,11 @@ function LoginModal({ onClose, onSwitch }) {
     clearAll();
     try {
       const u = await loginWithGoogle();
-      if (u) { toast(`Welcome back, ${u.name.split(' ')[0]}!`, 'success'); onClose(); navigate('/problems'); }
+      if (!u) return;
+      toast(`Welcome back, ${u.name.split(' ')[0]}!`, 'success');
+      onClose(); navigate('/problems');
     } catch (err) {
-      setOauthError({ message: err.friendlyMessage || 'Google sign-in failed.', hint: err.hint || null });
+      setOauthError({ message: err.friendlyMessage || 'Google sign-in failed. Please try again.' });
     }
   };
 
@@ -332,10 +368,18 @@ function LoginModal({ onClose, onSwitch }) {
     clearAll();
     try {
       const u = await loginWithGitHub();
-      if (u) { toast(`Welcome back, ${u.name.split(' ')[0]}!`, 'success'); onClose(); navigate('/problems'); }
+      if (!u) return;
+      toast(`Welcome back, ${u.name.split(' ')[0]}!`, 'success');
+      onClose(); navigate('/problems');
     } catch (err) {
-      setOauthError({ message: err.friendlyMessage || 'GitHub sign-in failed.', hint: err.hint || null });
+      setOauthError({ message: err.friendlyMessage || 'GitHub sign-in failed. Please try again.' });
     }
+  };
+
+  const goToForgotEmail = (prefillEmail = '') => {
+    setFpEmail(prefillEmail || email);
+    setFpError('');
+    setScreen('forgotEmail');
   };
 
   const sendResetOtp = async (isResend = false) => {
@@ -353,10 +397,8 @@ function LoginModal({ onClose, onSwitch }) {
       const code        = err.response?.data?.code;
       const secondsLeft = err.response?.data?.secondsLeft || 120;
       if (code === 'OTP_COOLDOWN') {
-        setOtpResendCooldown(secondsLeft);
-
-        if (isResend) setOtpError(err.response.data.error);
-        else { setFpCooldown(secondsLeft); setFpError(err.response.data.error); setScreen('otp'); }
+        setGateCooldown(secondsLeft);
+        setScreen('gate');
       } else {
         const msg = err.response?.data?.error || 'Failed to send code. Please try again.';
         if (isResend) setOtpError(msg);
@@ -381,17 +423,49 @@ function LoginModal({ onClose, onSwitch }) {
     } finally { setOtpLoading(false); }
   };
 
+
+
+
+
   const resetPassword = async () => {
-    setNewPwdErrors(true);
-    if (!isStrongPassword(newPwd)) return;
-    setNewPwdLoading(true); setNewPwdError('');
-    try {
-      await axios.post('/api/users/reset-password', { resetToken, password: newPwd });
-      setScreen('success');
-    } catch (err) {
-      setNewPwdError(err.response?.data?.error || 'Failed to reset. Please try again.');
-    } finally { setNewPwdLoading(false); }
-  };
+  setNewPwdErrors(true);
+  if (!isStrongPassword(newPwd)) return;
+  setNewPwdLoading(true); setNewPwdError('');
+
+
+
+  clearSession();
+
+  try {
+    await axios.post(
+      '/api/users/reset-password',
+      { resetToken, password: newPwd },
+      { _skipAuthRetry: true }
+    );
+    setScreen('success');
+  } catch (err) {
+
+
+    setNewPwdError(err.response?.data?.error || 'Failed to reset. Please try again.');
+  } finally {
+    setNewPwdLoading(false);
+  }
+};
+
+
+  if (screen === 'gate') return (
+    <CooldownGate
+      secondsLeft={gateCooldown}
+      onClose={onClose}
+      onReady={() => {
+        setGateCooldown(0);
+        setFpError('');
+        setOtp(['', '', '', '', '', '']);
+        setOtpError('');
+        setScreen('forgotEmail');
+      }}
+    />
+  );
 
 
   if (screen === 'login') return (
@@ -431,7 +505,7 @@ function LoginModal({ onClose, onSwitch }) {
             </div>
             <FieldError msg={fieldErrors.password} />
             <button type="button" className={styles.forgotLink}
-              onClick={() => { setFpEmail(email); setFpError(''); setScreen('forgotEmail'); }}>
+              onClick={() => goToForgotEmail(email)}>
               Forgot password?
             </button>
           </div>
@@ -542,7 +616,7 @@ function LoginModal({ onClose, onSwitch }) {
 
         <OtpInput otp={otp} setOtp={v => { setOtp(v); setOtpError(''); }} otpError={otpError} otpRefs={otpRefs} />
 
-        <ResendHint resendCooldown={otpResendCooldown} />
+        {otpCountdown > 0 && <ResendHint resendCooldown={otpResendCooldown} />}
 
         {otpError && (
           <div className={`${styles.banner} ${styles.bannerError}`} style={{ marginTop: 8 }}>
@@ -550,16 +624,18 @@ function LoginModal({ onClose, onSwitch }) {
           </div>
         )}
 
-
         {otpCountdown === 0 && otpExpiry !== null ? (
-          <button className="btn btn-primary w-full"
-            style={{ justifyContent: 'center', marginTop: 16 }}
-            onClick={() => sendResetOtp(true)}
-            disabled={fpLoading || otpResendCooldown > 0}>
-            {fpLoading
-              ? <><span className="spinner" /> Sending…</>
-              : otpResendCooldown > 0 ? `Resend in ${otpResendCooldown}s` : 'Resend OTP'}
-          </button>
+          <>
+            <p style={{ textAlign: 'center', fontSize: '.8rem', color: 'var(--text-muted)', marginTop: 12, marginBottom: 4 }}>
+              Code expired.
+            </p>
+            <button className="btn btn-primary w-full"
+              style={{ justifyContent: 'center', marginTop: 8 }}
+              onClick={() => sendResetOtp(true)}
+              disabled={fpLoading}>
+              {fpLoading ? <><span className="spinner" /> Sending…</> : 'Resend OTP'}
+            </button>
+          </>
         ) : (
           <button className="btn btn-primary w-full"
             style={{ justifyContent: 'center', marginTop: 16 }}
@@ -650,9 +726,6 @@ function LoginModal({ onClose, onSwitch }) {
 }
 
 
-
-
-
 function RegisterModal({ onClose, onSwitch }) {
   const { register, toast, setSession } = useApp();
   const { loginWithGoogle, loginWithGitHub } = useAuth();
@@ -681,16 +754,22 @@ function RegisterModal({ onClose, onSwitch }) {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendLoading,  setResendLoading]  = useState(false);
   const [resendDone,     setResendDone]     = useState(false);
+
+
+  const [showGate,     setShowGate]     = useState(false);
+  const [gateCooldown, setGateCooldown] = useState(0);
+
   const otpRefs = useRef([]);
 
   const clearAll = () => { setOauthError(null); setServerError(null); setFieldErrors({}); };
+
 
   useEffect(() => {
     if (!registered || !otpExpiry) return;
     const interval = setInterval(() => {
       const left = Math.max(0, Math.ceil((otpExpiry - Date.now()) / 1000));
       setOtpCountdown(left);
-      if (left === 0) clearInterval(interval);
+      if (left === 0) { setResendCooldown(0); clearInterval(interval); }
     }, 1000);
     return () => clearInterval(interval);
   }, [registered, otpExpiry]);
@@ -711,7 +790,7 @@ function RegisterModal({ onClose, onSwitch }) {
       localStorage.setItem('cf_token', data.token);
       axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
       setSession(data.token, data.user);
-      toast(`Welcome to CodeForge, ${data.user.name.split(' ')[0]}! `, 'success');
+      toast(`Welcome to CodeForge, ${data.user.name.split(' ')[0]}!`, 'success');
       onClose();
       navigate('/problems');
     } catch (err) {
@@ -733,9 +812,14 @@ function RegisterModal({ onClose, onSwitch }) {
       setTimeout(() => setResendDone(false), 4000);
       setTimeout(() => otpRefs.current[0]?.focus(), 50);
     } catch (err) {
+      const code        = err.response?.data?.code;
       const secondsLeft = err.response?.data?.secondsLeft;
-      if (secondsLeft) setResendCooldown(secondsLeft);
-      setOtpError(err.response?.data?.error || 'Failed to resend. Please try again.');
+      if (code === 'OTP_COOLDOWN' && secondsLeft) {
+        setGateCooldown(secondsLeft);
+        setShowGate(true);
+      } else {
+        setOtpError(err.response?.data?.error || 'Failed to resend. Please try again.');
+      }
     } finally { setResendLoading(false); }
   };
 
@@ -768,18 +852,24 @@ function RegisterModal({ onClose, onSwitch }) {
       setResendCooldown(120);
       setRegistered(true);
     } catch (err) {
-      const code = err.response?.data?.code;
-      const msg  = err.response?.data?.error || 'Network error. Please check your internet connection and try again.';
+      const code        = err.response?.data?.code;
+      const msg         = err.response?.data?.error || 'Network error. Please check your internet connection and try again.';
+      const secondsLeft = err.response?.data?.secondsLeft || 0;
+
       if (code === 'UNVERIFIED_EXISTS') {
         setRegEmail(err.response.data.email || email.trim());
-        const secondsLeft = err.response.data.secondsLeft || 0;
-        setOtpExpiry(Date.now() + 2 * 60 * 1000);
-        setOtpCountdown(120);
-        setResendCooldown(secondsLeft > 0 ? secondsLeft : 120);
-        setRegistered(true);
-        setOtpError('');
+        if (secondsLeft > 0) {
+          setGateCooldown(secondsLeft);
+          setShowGate(true);
+          setRegistered(true);
+        } else {
+          setOtpExpiry(Date.now() + 2 * 60 * 1000);
+          setOtpCountdown(120);
+          setResendCooldown(120);
+          setRegistered(true);
+          setOtpError('');
+        }
       } else if (code === 'EMAIL_TAKEN') {
-
         setServerError({ message: msg, code, hint: 'login' });
       } else if (code === 'USE_OAUTH') {
         const provider = err.response?.data?.provider;
@@ -794,9 +884,11 @@ function RegisterModal({ onClose, onSwitch }) {
     clearAll();
     try {
       const u = await loginWithGoogle();
-      if (u) { toast(`Welcome to CodeForge, ${u.name.split(' ')[0]}!`, 'success'); onClose(); navigate('/problems'); }
+      if (!u) return;
+      toast(`Welcome to CodeForge, ${u.name.split(' ')[0]}!`, 'success');
+      onClose(); navigate('/problems');
     } catch (err) {
-      setOauthError({ message: err.friendlyMessage || 'Google sign-up failed.', hint: err.hint || null });
+      setOauthError({ message: err.friendlyMessage || 'Google sign-up failed. Please try again.' });
     }
   };
 
@@ -804,11 +896,28 @@ function RegisterModal({ onClose, onSwitch }) {
     clearAll();
     try {
       const u = await loginWithGitHub();
-      if (u) { toast(`Welcome to CodeForge, ${u.name.split(' ')[0]}!`, 'success'); onClose(); navigate('/problems'); }
+      if (!u) return;
+      toast(`Welcome to CodeForge, ${u.name.split(' ')[0]}!`, 'success');
+      onClose(); navigate('/problems');
     } catch (err) {
-      setOauthError({ message: err.friendlyMessage || 'GitHub sign-up failed.', hint: err.hint || null });
+      setOauthError({ message: err.friendlyMessage || 'GitHub sign-up failed. Please try again.' });
     }
   };
+
+
+  if (showGate) return (
+    <CooldownGate
+      secondsLeft={gateCooldown}
+      onClose={onClose}
+      onReady={() => {
+        setShowGate(false);
+        setGateCooldown(0);
+        setRegistered(false);
+        setOtp(['','','','','','']);
+        setOtpError('');
+      }}
+    />
+  );
 
 
   if (registered) return (
@@ -827,7 +936,7 @@ function RegisterModal({ onClose, onSwitch }) {
 
         <OtpInput otp={otp} setOtp={v => { setOtp(v); setOtpError(''); }} otpError={otpError} otpRefs={otpRefs} />
 
-        <ResendHint resendCooldown={resendCooldown} />
+        {otpCountdown > 0 && <ResendHint resendCooldown={resendCooldown} />}
 
         {resendDone && (
           <div className={`${styles.banner} ${styles.bannerSuccess}`} style={{ marginTop: 8 }}>
@@ -840,16 +949,18 @@ function RegisterModal({ onClose, onSwitch }) {
           </div>
         )}
 
-
         {otpCountdown === 0 && otpExpiry !== null ? (
-          <button className="btn btn-primary w-full"
-            style={{ justifyContent: 'center', marginTop: 16 }}
-            onClick={resendOtp}
-            disabled={resendLoading || resendCooldown > 0}>
-            {resendLoading
-              ? <><span className="spinner" /> Sending…</>
-              : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend OTP'}
-          </button>
+          <>
+            <p style={{ textAlign: 'center', fontSize: '.8rem', color: 'var(--text-muted)', marginTop: 12, marginBottom: 4 }}>
+              Code expired.
+            </p>
+            <button className="btn btn-primary w-full"
+              style={{ justifyContent: 'center', marginTop: 8 }}
+              onClick={resendOtp}
+              disabled={resendLoading}>
+              {resendLoading ? <><span className="spinner" /> Sending…</> : 'Resend OTP'}
+            </button>
+          </>
         ) : (
           <button className="btn btn-primary w-full"
             style={{ justifyContent: 'center', marginTop: 16 }}

@@ -12,12 +12,25 @@ const firebaseAuth = firebaseApp ? getAuth(firebaseApp) : null;
 export { isFirebaseConfigured };
 
 
-
-
-
-
 function isOffline() {
   return typeof navigator !== 'undefined' && !navigator.onLine;
+}
+
+
+
+
+
+function extractEmail(firebaseUser) {
+  if (firebaseUser.email) return firebaseUser.email;
+
+
+  if (Array.isArray(firebaseUser.providerData)) {
+    for (const p of firebaseUser.providerData) {
+      if (p?.email) return p.email;
+    }
+  }
+
+  return null;
 }
 
 
@@ -45,7 +58,14 @@ function parseOAuthError(err, providerName) {
 
 
   if (err.code === 'auth/popup-blocked') {
-    const e = new Error('Popup was blocked by your browser. Please allow popups for this site.');
+    const e = new Error('Popup was blocked by your browser. Please allow popups for this site and try again.');
+    e.friendlyMessage = e.message;
+    throw e;
+  }
+
+
+  if (err.code === 'auth/unauthorized-domain') {
+    const e = new Error('This domain is not authorized for sign-in. Please contact support.');
     e.friendlyMessage = e.message;
     throw e;
   }
@@ -69,6 +89,10 @@ function parseOAuthError(err, providerName) {
   }
 
 
+
+  if (err.friendlyMessage) throw err;
+
+
   const fallback = err.response?.data?.error || `${providerName} sign-in failed. Please try again.`;
   const e = new Error(fallback);
   e.friendlyMessage = e.message;
@@ -76,14 +100,16 @@ function parseOAuthError(err, providerName) {
 }
 
 
-
-
 export function useAuth() {
   const { oauthLogin } = useApp();
 
 
   const loginWithGoogle = async () => {
-    if (!firebaseAuth) return;
+    if (!firebaseAuth) {
+      const e = new Error('Google sign-in is not configured. Please try email/password sign-in.');
+      e.friendlyMessage = e.message;
+      throw e;
+    }
 
     if (isOffline()) {
       const e = new Error('No internet connection. Please check your network and try again.');
@@ -95,9 +121,24 @@ export function useAuth() {
     try {
       const result = await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
       const u = result.user;
+
+
+      const email = extractEmail(u);
+
+      if (!email) {
+
+
+        const e = new Error(
+          'Your Google account has no verified email address. ' +
+          'Please add and verify an email in your Google account settings, then try again.'
+        );
+        e.friendlyMessage = e.message;
+        throw e;
+      }
+
       return await oauthLogin({
-        name:          u.displayName || u.email,
-        email:         u.email,
+        name:          u.displayName || email.split('@')[0],
+        email,
         oauthProvider: 'google',
         oauthId:       u.uid,
         avatarUrl:     u.photoURL || '',
@@ -109,7 +150,11 @@ export function useAuth() {
 
 
   const loginWithGitHub = async () => {
-    if (!firebaseAuth) return;
+    if (!firebaseAuth) {
+      const e = new Error('GitHub sign-in is not configured. Please try email/password sign-in.');
+      e.friendlyMessage = e.message;
+      throw e;
+    }
 
     if (isOffline()) {
       const e = new Error('No internet connection. Please check your network and try again.');
@@ -120,15 +165,24 @@ export function useAuth() {
     const { GithubAuthProvider, signInWithPopup } = await import('firebase/auth');
     try {
       const result = await signInWithPopup(firebaseAuth, new GithubAuthProvider());
-      const u     = result.user;
-      const email = u.email || u.providerData?.find(p => p.email)?.email;
+      const u = result.user;
+
+
+      const email = extractEmail(u);
+
       if (!email) {
-        const e = new Error('No email found. Please add a public email in your GitHub settings.');
+
+        const e = new Error(
+          'Your GitHub account email is private. ' +
+          'To sign in with GitHub, go to GitHub → Settings → Emails and uncheck ' +
+          '"Keep my email address private", then try again.'
+        );
         e.friendlyMessage = e.message;
         throw e;
       }
+
       return await oauthLogin({
-        name:          u.displayName || email,
+        name:          u.displayName || email.split('@')[0],
         email,
         oauthProvider: 'github',
         oauthId:       u.uid,

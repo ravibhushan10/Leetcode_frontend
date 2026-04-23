@@ -61,7 +61,6 @@ export function AppProvider({ children }) {
   const [showPayment, setShowPayment] = useState(false);
   const openPayment = useCallback(() => setShowPayment(true), []);
 
-
   useEffect(() => {
     const goOnline  = () => setOffline(false);
     const goOffline = () => setOffline(true);
@@ -103,60 +102,64 @@ export function AppProvider({ children }) {
     }
   }, []);
 
-  useEffect(() => {
-    let isRefreshing = false;
-    let pendingQueue = [];
+useEffect(() => {
+  let isRefreshing = false;
+  let pendingQueue = [];
 
-    const flush = (newToken) => {
-      pendingQueue.forEach(({ resolve }) => resolve(newToken));
-      pendingQueue = [];
-    };
+  const flush = (newToken) => {
+    pendingQueue.forEach(({ resolve }) => resolve(newToken));
+    pendingQueue = [];
+  };
 
-    const interceptor = axios.interceptors.response.use(
-      res => res,
-      async (error) => {
-        const original = error.config;
-        if (
-          error.response?.status === 401 &&
-          !original._retry &&
-          !original.url?.includes('/refresh') &&
-          !original.url?.includes('/login') &&
-          !original.url?.includes('/verify-email') &&
-          !original.url?.includes('/reset-password') &&
-          !original.url?.includes('/forgot-password') &&
-          !original.url?.includes('/verify-otp') &&
-          !original.url?.includes('/admin-login')
-        ) {
-          if (isRefreshing) {
-            return new Promise((resolve, reject) => {
-              pendingQueue.push({
-                resolve: (newToken) => {
-                  original.headers['Authorization'] = `Bearer ${newToken}`;
-                  resolve(axios(original));
-                },
-                reject,
-              });
+  const interceptor = axios.interceptors.response.use(
+    res => res,
+    async (error) => {
+      const original = error.config;
+
+
+      if (original?._skipAuthRetry) return Promise.reject(error);
+
+      const url = original?.url || '';
+      const SKIP_PATHS = [
+        '/refresh', '/login', '/verify-email', '/reset-password',
+        '/forgot-password', '/verify-otp', '/admin-login',
+      ];
+
+      if (
+        error.response?.status === 401 &&
+        !original._retry &&
+        !SKIP_PATHS.some(p => url.includes(p))
+      ) {
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            pendingQueue.push({
+              resolve: (newToken) => {
+                original.headers['Authorization'] = `Bearer ${newToken}`;
+                resolve(axios(original));
+              },
+              reject,
             });
-          }
-          original._retry = true;
-          isRefreshing     = true;
-          const newToken = await refreshAccessToken();
-          isRefreshing   = false;
-          if (newToken) {
-            flush(newToken);
-            original.headers['Authorization'] = `Bearer ${newToken}`;
-            return axios(original);
-          } else {
-            flush(null);
-            return Promise.reject(error);
-          }
+          });
         }
-        return Promise.reject(error);
+        original._retry = true;
+        isRefreshing = true;
+        const newToken = await refreshAccessToken();
+        isRefreshing = false;
+        if (newToken) {
+          flush(newToken);
+          original.headers['Authorization'] = `Bearer ${newToken}`;
+          return axios(original);
+        } else {
+          flush(null);
+          return Promise.reject(error);
+        }
       }
-    );
+      return Promise.reject(error);
+    }
+  );
 
-    return () => axios.interceptors.response.eject(interceptor);
-  }, [refreshAccessToken]);
+  return () => axios.interceptors.response.eject(interceptor);
+}, [refreshAccessToken]);
 
   const oauthLogin = useCallback(async (profile) => {
     const { data } = await axios.post('/api/users/oauth', profile, { withCredentials: true });
@@ -178,7 +181,7 @@ export function AppProvider({ children }) {
           const { data: me } = await axios.get('/api/users/me');
           setUser(me);
         } catch {
-         
+
         }
         return;
       }
@@ -237,6 +240,17 @@ export function AppProvider({ children }) {
     delete axios.defaults.headers.common['Authorization'];
   }, []);
 
+
+
+
+
+  const clearSession = useCallback(() => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('cf_token');
+    delete axios.defaults.headers.common['Authorization'];
+  }, []);
+
   const refreshUser = useCallback(async () => {
     try {
       const { data } = await axios.get('/api/users/me');
@@ -276,7 +290,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       user, token, loading, offline,
-      login, register, oauthLogin, logout, refreshUser, updateUserLocal, setSession,
+      login, register, oauthLogin, logout, clearSession, refreshUser, updateUserLocal, setSession,
       toast, toasts,
       getRatingTitle, diffBadge,
       API,
@@ -290,7 +304,7 @@ export function AppProvider({ children }) {
       <div className="toast-container">
         {toasts.map(t => (
           <div key={t.id} className={`toast ${t.type}`}>
-            <span>{t.type === 'success' ? '' : t.type === 'error' ? '' : t.type === 'warning' ? '' : ''}</span>
+            <span>{t.type === 'success' ? '✓' : t.type === 'error' ? '✕' : t.type === 'warning' ? '⚠' : 'ℹ'}</span>
             <span>{t.message}</span>
           </div>
         ))}
