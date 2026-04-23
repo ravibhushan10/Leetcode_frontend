@@ -1,4 +1,4 @@
-// useAuth.js - COMPLETE FIXED VERSION
+// useAuth.js — FINAL COMPLETE FIX
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { firebaseConfig, isFirebaseConfigured } from '../firebaseConfig.js';
@@ -12,15 +12,12 @@ const firebaseAuth = firebaseApp ? getAuth(firebaseApp) : null;
 
 export { isFirebaseConfigured };
 
-
 function isOffline() {
   return typeof navigator !== 'undefined' && !navigator.onLine;
 }
 
 
-// ─── Fetch GitHub primary verified email using the access token ───────────────
-// This works even when the user has "Keep my email address private" enabled.
-// GitHub requires the user:email scope to access this endpoint.
+// ─── GitHub: fetch primary verified email via API (handles private emails) ────
 async function fetchGitHubPrimaryEmail(accessToken) {
   try {
     const res = await fetch('https://api.github.com/user/emails', {
@@ -29,24 +26,48 @@ async function fetchGitHubPrimaryEmail(accessToken) {
         Accept: 'application/vnd.github.v3+json',
       },
     });
-
     if (!res.ok) return null;
-
     const emails = await res.json();
     if (!Array.isArray(emails)) return null;
-
     // Priority 1: primary + verified
     const primary = emails.find(e => e.primary && e.verified);
     if (primary?.email) return primary.email;
-
-    // Priority 2: any verified email
+    // Priority 2: any verified
     const anyVerified = emails.find(e => e.verified);
     if (anyVerified?.email) return anyVerified.email;
+    // Priority 3: any email
+    return emails.find(e => e.email)?.email || null;
+  } catch {
+    return null;
+  }
+}
 
-    // Priority 3: any email at all (last resort)
-    const anyEmail = emails.find(e => e.email);
-    return anyEmail?.email || null;
 
+// ─── Google: fetch email via People API (handles phone-only Google accounts) ──
+// Some Google accounts are created with phone number only (no email attached).
+// Firebase returns no email for these. The People API can confirm this.
+// If People API also returns nothing, the account genuinely has no email.
+async function fetchGoogleEmailFromPeopleAPI(accessToken) {
+  try {
+    const res = await fetch(
+      'https://people.googleapis.com/v1/people/me?personFields=emailAddresses',
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const emails = data.emailAddresses || [];
+    // Priority 1: primary + verified
+    const primary = emails.find(
+      e => e.metadata?.primary && e.metadata?.verified
+    );
+    if (primary?.value) return primary.value;
+    // Priority 2: any verified
+    const anyVerified = emails.find(e => e.metadata?.verified);
+    if (anyVerified?.value) return anyVerified.value;
+    // Priority 3: any email
+    return emails.find(e => e.value)?.value || null;
   } catch {
     return null;
   }
@@ -54,14 +75,14 @@ async function fetchGitHubPrimaryEmail(accessToken) {
 
 
 function extractEmail(firebaseUser) {
+  // Check top-level email
   if (firebaseUser.email) return firebaseUser.email;
-
+  // Check providerData (sometimes email is here even when top-level is null)
   if (Array.isArray(firebaseUser.providerData)) {
     for (const p of firebaseUser.providerData) {
       if (p?.email) return p.email;
     }
   }
-
   return null;
 }
 
@@ -128,17 +149,29 @@ export function useAuth() {
   const { oauthLogin } = useApp();
 
 
-  // ─── Google OAuth ────────────────────────────────────────────────────────────
-  // Google case: if Firebase returns no email, the user's Google account
-  // genuinely has no verified email — nothing we can do programmatically.
-  // We show a clear, actionable error message.
+  // ─── Google OAuth ─────────────────────────────────────────────────────────
+  // THE FIX for Google:
+  // Problem: The "Codeforge" test account was created with phone number only —
+  // no Gmail or email address is linked to it at all. Firebase confirms this:
+  //   - emailVerified: false
+  //   - granted_scopes: only "profile openid" — NO email scope was granted
+  //   - rawUserInfo has no email field
+  //
+  // Fix Part 1: Explicitly request the `email` scope on GoogleAuthProvider.
+  //   This forces Google to show the email permission in the consent screen.
+  //   For accounts WITH email, this guarantees we get it.
+  //
+  // Fix Part 2: If Firebase still returns no email (phone-only account),
+  //   call the People API with the access token as a last resort.
+  //
+  // Fix Part 3: If People API also returns nothing, the account truly has
+  //   no email. Show a clear, accurate error message.
   const loginWithGoogle = async () => {
     if (!firebaseAuth) {
       const e = new Error('Google sign-in is not configured. Please try email/password sign-in.');
       e.friendlyMessage = e.message;
       throw e;
     }
-
     if (isOffline()) {
       const e = new Error('No internet connection. Please check your network and try again.');
       e.friendlyMessage = e.message;
@@ -147,14 +180,34 @@ export function useAuth() {
 
     const { GoogleAuthProvider, signInWithPopup } = await import('firebase/auth');
     try {
-      const result = await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
-      const u = result.user;
-      const email = extractEmail(u);
+      // STEP 1: Explicitly request email scope
+      // Without this, phone-only accounts don't grant email access at all.
+      // This is why your granted_scopes only showed "profile openid" — no email!
+      const provider = new GoogleAuthProvider();
+      provider.addScope('email');               // <── KEY FIX for Google
+      provider.addScope('profile');
 
+      const result = await signInWithPopup(firebaseAuth, provider);
+      const u = result.user;
+
+      // STEP 2: Try Firebase's built-in email first
+      let email = extractEmail(u);
+
+      // STEP 3: Firebase returned no email — try People API fallback
+      if (!email) {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const accessToken = credential?.accessToken;
+        if (accessToken) {
+          email = await fetchGoogleEmailFromPeopleAPI(accessToken);
+        }
+      }
+
+      // STEP 4: Genuinely no email on this Google account (phone-only account)
       if (!email) {
         const e = new Error(
-          'Your Google account has no verified email address. ' +
-          'Please add and verify an email in your Google account settings, then try again.'
+          'Your Google account has no email address linked to it. ' +
+          'Please add an email address to your Google account at myaccount.google.com, ' +
+          'or sign in with a different Google account that has an email.'
         );
         e.friendlyMessage = e.message;
         throw e;
@@ -173,28 +226,21 @@ export function useAuth() {
   };
 
 
-  // ─── GitHub OAuth ────────────────────────────────────────────────────────────
-  // THE FIX:
-  // Problem: Firebase's GithubAuthProvider returns null email when the user
-  // has "Keep my email address private" enabled in GitHub Settings.
+  // ─── GitHub OAuth ──────────────────────────────────────────────────────────
+  // THE FIX for GitHub:
+  // Problem: Firebase's GithubAuthProvider doesn't request user:email scope
+  //   by default. When a user has "Keep my email address private" enabled
+  //   (which is GitHub's DEFAULT), Firebase gets null for email.
   //
-  // Solution:
-  // 1. Add the `user:email` scope to the GitHub provider BEFORE the popup.
-  //    This tells GitHub we need email access.
-  // 2. Extract the OAuth access token from Firebase's credential result.
-  // 3. Call GitHub's /user/emails API directly with that token.
-  //    This endpoint returns ALL emails including private ones, as long as
-  //    the user:email scope was granted — which it always is after step 1.
-  // 4. Pick the primary + verified email from the list.
-  //
-  // This works for 100% of GitHub users regardless of their privacy settings.
+  // Fix: Add user:email scope + call /user/emails API with the access token.
+  //   This endpoint returns private emails too, as long as user:email scope
+  //   was granted — which it is after addScope('user:email').
   const loginWithGitHub = async () => {
     if (!firebaseAuth) {
       const e = new Error('GitHub sign-in is not configured. Please try email/password sign-in.');
       e.friendlyMessage = e.message;
       throw e;
     }
-
     if (isOffline()) {
       const e = new Error('No internet connection. Please check your network and try again.');
       e.friendlyMessage = e.message;
@@ -202,34 +248,32 @@ export function useAuth() {
     }
 
     const { GithubAuthProvider, signInWithPopup } = await import('firebase/auth');
-
     try {
-      // STEP 1: Add user:email scope so GitHub grants email access
+      // STEP 1: Request user:email scope explicitly
       const provider = new GithubAuthProvider();
-      provider.addScope('user:email'); // <-- THIS IS THE KEY FIX
+      provider.addScope('user:email');          // <── KEY FIX for GitHub
 
       const result = await signInWithPopup(firebaseAuth, provider);
       const u = result.user;
 
-      // STEP 2: Try Firebase's email first (works when email is public)
+      // STEP 2: Try Firebase's built-in email first (works if email is public)
       let email = extractEmail(u);
 
-      // STEP 3: If still no email (private email setting), call GitHub API
+      // STEP 3: Email was private — call GitHub emails API
       if (!email) {
-        // Get the GitHub OAuth access token from Firebase credential
         const credential = GithubAuthProvider.credentialFromResult(result);
         const accessToken = credential?.accessToken;
-
         if (accessToken) {
           email = await fetchGitHubPrimaryEmail(accessToken);
         }
       }
 
-      // STEP 4: If we STILL have no email after trying the API, show helpful error
+      // STEP 4: No email found at all (no verified email on GitHub account)
       if (!email) {
         const e = new Error(
           'Unable to access your GitHub email address. ' +
-          'Please ensure you have at least one verified email on your GitHub account, then try again.'
+          'Please ensure you have at least one verified email on your GitHub account ' +
+          'at github.com/settings/emails, then try again.'
         );
         e.friendlyMessage = e.message;
         throw e;
@@ -242,7 +286,6 @@ export function useAuth() {
         oauthId:       u.uid,
         avatarUrl:     u.photoURL || '',
       });
-
     } catch (err) {
       return parseOAuthError(err, 'GitHub');
     }
