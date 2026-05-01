@@ -17,7 +17,7 @@ function makeAccessToken(user) {
   return jwt.sign(
     { id: user._id, email: user.email, plan: user.plan, isAdmin: user.isAdmin },
     process.env.JWT_SECRET,
-    { expiresIn: '15m' }
+    { expiresIn: '180d' }
   );
 }
 
@@ -69,6 +69,14 @@ function sanitize(user) {
   delete u.resetOtpLockedUntil;
   delete u.resetOtpSentAt;
   delete u.oauthId;
+  // Compute effective streak: reset to 0 if user missed yesterday
+  if (u.streak && u.streakLast) {
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+    if (u.streakLast !== today && u.streakLast !== yesterday) {
+      u.streak = 0;
+    }
+  }
   return u;
 }
 
@@ -829,10 +837,12 @@ router.post('/bookmark/:problemId', authMiddleware, async (req, res) => {
 router.get('/leaderboard', async (req, res) => {
   try {
     const users = await User.find({ isAdmin: false, isVerified: true })
-      .select('_id name initials avatarUrl rating ratingTitle plan streak solved')
+      .select('_id name initials avatarUrl rating ratingTitle plan streak streakLast solved')
       .sort({ rating: -1 })
       .limit(50);
 
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
     return res.json(users.map((u, i) => ({
       _id: u._id.toString(),
       rank: i + 1,
@@ -842,7 +852,7 @@ router.get('/leaderboard', async (req, res) => {
       rating: u.rating,
       ratingTitle: u.ratingTitle,
       plan: u.plan,
-      streak: u.streak,
+      streak: (u.streak && u.streakLast && (u.streakLast === today || u.streakLast === yesterday)) ? u.streak : 0,
       solved: u.solved.length,
     })));
   } catch (err) {
@@ -949,7 +959,12 @@ router.get('/ml-insights', authMiddleware, async (req, res) => {
         acceptanceRate: submissions.length
           ? Math.round((submissions.filter(s => s.verdict === 'Accepted').length / submissions.length) * 100)
           : 0,
-        streak: user.streak || 0,
+        streak: (() => {
+          const today = new Date().toISOString().slice(0, 10);
+          const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+          return (user.streak && user.streakLast && (user.streakLast === today || user.streakLast === yesterday))
+            ? user.streak : 0;
+        })(),
       },
     });
   } catch (err) {

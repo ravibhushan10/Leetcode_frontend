@@ -66,8 +66,44 @@
 @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes popIn   { from { transform: scale(.93); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+@media (max-width: 640px) {
+  .overlay { padding: 0; align-items: flex-end; }
+  .modal {
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    padding: 20px 16px 28px;
+    max-height: 90vh;
+    max-width: 100%;
+    animation: slideUp 0.28s ease;
+    overflow-y: auto;
+  }
+  .modal::before {
+    content: '';
+    display: block;
+    width: 36px; height: 4px;
+    background: var(--border-light);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .title { font-size: 1.4rem; }
+  .sub { font-size: .85rem; }
+  .header { margin-bottom: 16px; }
+  .grid { gap: 8px; margin-bottom: 20px; }
+  .benefit { padding: 10px 12px; }
+  .benefitTitle { font-size: .8rem; }
+  .benefitDesc { font-size: .7rem; }
+}
+
 @media (max-width: 520px) {
-  .grid  { grid-template-columns: 1fr; }
-  .modal { padding: 28px 18px 22px; }
-  .title { font-size: 1.6rem; }
+  .grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 400px) {
+  .modal { padding: 16px 14px 24px; }
+  .title { font-size: 1.2rem; }
+  .benefit { padding: 9px 10px; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
 }

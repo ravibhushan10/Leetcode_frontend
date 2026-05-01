@@ -25,6 +25,7 @@ export default function Solve() {
   const { user, diffBadge, toast, openPayment, showPayment, setShowPayment } = useApp();
 
   const [activeTab,    setActiveTab]    = useState('description');
+  const [mobilePanelTab, setMobilePanelTab] = useState('description'); // 'description' | 'editor'
   const [lang,         setLang]         = useState(user?.langPref || 'python');
   const [code,         setCode]         = useState('');
   const [codeSet,      setCodeSet]      = useState(false);
@@ -173,9 +174,22 @@ export default function Solve() {
     <Seo title={problem?.title || "Solve"} noindex={true} path={`/problems/${slug}`} />
 
     <div className={`${styles.page} page-animate`}>
+
+      {/* Mobile top tab switcher — LeetCode style */}
+      <div className={styles.mobilePanelSwitch}>
+        <button
+          className={`${styles.mobilePanelBtn} ${mobilePanelTab === 'description' ? styles.mobilePanelBtnActive : ''}`}
+          onClick={() => setMobilePanelTab('description')}
+        >Description</button>
+        <button
+          className={`${styles.mobilePanelBtn} ${mobilePanelTab === 'editor' ? styles.mobilePanelBtnActive : ''}`}
+          onClick={() => setMobilePanelTab('editor')}
+        >Code</button>
+      </div>
+
       <div className={styles.workspace}>
 
-        <div className={styles.leftPanel} style={{ width: leftPanel.size, minWidth: 280, maxWidth: 700 }}>
+        <div className={`${styles.leftPanel} ${mobilePanelTab !== 'description' ? styles.mobileHidden : ''}`} style={{ width: leftPanel.size, minWidth: 280, maxWidth: 700 }}>
           <div className={styles.panelTabs}>
             {[
               { id: 'description', label: 'Description' },
@@ -352,7 +366,7 @@ export default function Solve() {
 
         <div className="resize-handle resize-handle-v" onMouseDown={leftPanel.onMouseDown} />
 
-        <div className={styles.rightPanel}>
+        <div className={`${styles.rightPanel} ${mobilePanelTab !== 'editor' ? styles.mobileHiddenRight : ''}`}>
           <div className={styles.editorHeader}>
             <select className={styles.langSelect} value={lang} onChange={e => setLang(e.target.value)}>
               {LANGS.map(l => <option key={l.id} value={l.id}>{l.label}</option>)}

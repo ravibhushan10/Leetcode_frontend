@@ -57,7 +57,7 @@ export default function UsersPage({ apiFetch, toast }) {
               <tr><td colSpan={7} className="loading-row">No users found.</td></tr>
             ) : users.map(u => (
               <tr key={u._id} className={u.isAdmin ? 'admin-row' : ''}>
-                <td>
+                <td data-label="User">
                   <div className="user-cell">
                     <div className="user-avatar">{u.initials || '??'}</div>
                     <div>
@@ -66,16 +66,16 @@ export default function UsersPage({ apiFetch, toast }) {
                     </div>
                   </div>
                 </td>
-                <td className="muted" style={{ fontSize: '.8rem' }}>{u.email}</td>
-                <td className="mono text-purple">{u.rating || 0}</td>
-                <td className="mono">{(u.solved || []).length}</td>
-                <td>
+                <td data-label="Email" className="muted" style={{ fontSize: '.8rem' }}>{u.email}</td>
+                <td data-label="Rating" className="mono text-purple">{u.rating || 0}</td>
+                <td data-label="Solved" className="mono">{(u.solved || []).length}</td>
+                <td data-label="Plan">
                   <span className={`badge ${u.plan === 'pro' ? 'badge-green' : 'badge-info'}`}>
                     {u.plan || 'free'}
                   </span>
                 </td>
-                <td className="muted" style={{ fontSize: '.78rem' }}>{formatDate(u.createdAt)}</td>
-                <td>
+                <td data-label="Joined" className="muted" style={{ fontSize: '.78rem' }}>{formatDate(u.createdAt)}</td>
+                <td data-label="Actions">
                   <div className="action-btns">
                     <button className="btn btn-ghost btn-sm" onClick={() => togglePro(u._id)}>
                       {u.plan === 'pro' ? 'Cancel Pro' : 'Give Pro'}

@@ -2,11 +2,11 @@
 
 .header {
   text-align: center;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
   position: relative;
 }
 .header h2 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: -.02em;
   margin-bottom: 4px;
@@ -23,13 +23,13 @@
 
 .planSelector {
   display: grid; grid-template-columns: 1fr 1fr;
-  gap: 10px; margin-bottom: 18px;
+  gap: 10px; margin-bottom: 14px;
 }
 
 .planCard {
   position: relative;
   display: flex; flex-direction: column;
-  align-items: center; gap: 5px;
+  align-items: center; gap: 4px;
   padding: 8px 10px 12px;
   border-radius: var(--r-lg);
   background: var(--bg-secondary);
@@ -66,8 +66,8 @@
 .planDesc   { font-size: .68rem; color: var(--text-muted); margin-top: 1px; }
 
 .features {
-  display: flex; flex-direction: column; gap: 7px;
-  margin-bottom: 20px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+  margin-bottom: 16px; padding: 12px 14px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
@@ -87,13 +87,13 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 14px 16px;
+  padding: 12px 14px;
   display: flex; flex-direction: column; gap: 0;
 }
 
 .orderRow {
   display: flex; justify-content: space-between;
-  align-items: center; padding: 10px 0;
+  align-items: center; padding: 9px 0;
 }
 .orderRow:first-child { padding-top: 4px; }
 .orderRow:last-child  { padding-bottom: 4px; }
@@ -105,28 +105,50 @@
 .orderDivider  { height: 1px; background: var(--border); margin: 0; }
 
 .totalAmt {
-  font-size: 1.15rem; font-weight: 800;
+  font-size: 1.1rem; font-weight: 800;
   color: var(--green); font-family: var(--font-mono);
 }
 
 .secureNote {
-  text-align: center; font-size: .73rem;
-  color: var(--text-muted); margin: 14px 0 4px;
+  text-align: center; font-size: .72rem;
+  color: var(--text-muted); margin: 12px 0 2px;
   display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-.secureNote::before {
-  font-size: .7rem;
 }
 
 .actionBtn {
   justify-content: center;
-  font-size: .9rem; font-weight: 700;
-  padding: 13px; margin-top: 12px;
+  font-size: .88rem; font-weight: 700;
+  padding: 12px; margin-top: 10px;
   letter-spacing: .01em;
 }
 
-@media (max-width: 480px) {
-  .planAmount { font-size: 1.3rem; }
-  .features   { padding: 12px 14px; }
-  .orderSection { padding: 12px 14px; }
+/* ── Mobile ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .modal { max-width: 100%; }
+  .header { margin-bottom: 14px; }
+  .header h2 { font-size: 1.05rem; }
+  .planSelector { gap: 8px; margin-bottom: 12px; }
+  .planAmount { font-size: 1.35rem; }
+  .planLabel { font-size: .62rem; }
+  .planDesc { font-size: .62rem; }
+  .features { padding: 10px 12px; gap: 5px; margin-bottom: 12px; }
+  .feat { font-size: .78rem; gap: 8px; }
+  .orderSection { padding: 10px 12px; }
+  .orderRow { padding: 7px 0; }
+  .orderLabel { font-size: .76rem; }
+  .orderVal { font-size: .82rem; }
+  .totalAmt { font-size: 1rem; }
+  .secureNote { font-size: .68rem; }
+  .actionBtn { font-size: .85rem; padding: 11px; }
+}
+
+@media (max-width: 400px) {
+  .header h2 { font-size: .98rem; }
+  .planSelector { gap: 7px; }
+  .planAmount { font-size: 1.2rem; }
+  .planBadge { font-size: .54rem; padding: 2px 9px; }
+  .features { padding: 9px 11px; }
+  .feat { font-size: .74rem; }
+  .orderSection { padding: 8px 10px; }
+  .actionBtn { font-size: .82rem; padding: 10px; }
 }

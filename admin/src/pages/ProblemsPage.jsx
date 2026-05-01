@@ -16,23 +16,23 @@ function ProblemRow({ p, onEdit, onDelete, onTogglePremium }) {
 
   return (
     <tr>
-      <td className="mono muted">{p.number}</td>
-      <td>
+      <td data-label="#" className="mono muted">{p.number}</td>
+      <td data-label="Title">
         <div className="prob-title">{p.title}</div>
         <div className="prob-sub">{(p.companies || []).slice(0, 3).join(' · ')}</div>
       </td>
-      <td><span className={`badge ${diffBadgeClass(p.difficulty)}`}>{p.difficulty}</span></td>
-      <td className="tags-cell">
+      <td data-label="Difficulty"><span className={`badge ${diffBadgeClass(p.difficulty)}`}>{p.difficulty}</span></td>
+      <td data-label="Tags" className="tags-cell">
         {(p.tags || []).slice(0, 3).map(t => <span key={t} className="tag-chip">{t}</span>)}
       </td>
-      <td className="mono">{(p.acceptance || 0).toFixed(1)}%</td>
-      <td>
+      <td data-label="Accept" className="mono">{(p.acceptance || 0).toFixed(1)}%</td>
+      <td data-label="Premium">
         <label className="toggle">
           <input type="checkbox" checked={prem} onChange={handleToggle} />
           <span className="toggle-slider" />
         </label>
       </td>
-      <td>
+      <td data-label="Actions">
         <div className="action-btns">
           <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
           <button className="btn btn-danger btn-sm" onClick={onDelete}>Delete</button>
