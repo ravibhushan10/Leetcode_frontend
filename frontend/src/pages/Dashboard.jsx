@@ -99,7 +99,6 @@ export default function Dashboard() {
                     { label: 'Hard',          val: insights.stats.hardSolved,           color: 'var(--red)',    icon: '🔴' },
                     { label: 'Submissions',   val: insights.stats.totalSubmissions,     color: 'var(--blue)',   icon: '' },
                     { label: 'Acceptance',    val: `${insights.stats.acceptanceRate}%`, color: 'var(--purple)', icon: '' },
-                    { label: 'Streak',        val: `${insights.stats.streak}`,          color: 'var(--orange)', icon: '' },
                     { label: 'Rating',        val: user.rating,                         color: 'var(--purple)', icon: '' },
                   ].map(s => (
                     <div key={s.label} className={styles.statBox}>

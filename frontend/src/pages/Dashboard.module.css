@@ -20,10 +20,9 @@
 .tabs {
   display: flex; gap: 2px; flex-wrap: wrap;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
-.tabs::-webkit-scrollbar { height: 0; }
+
 .tab {
   display: flex; align-items: center; gap: 5px;
   padding: 10px 16px;
@@ -75,7 +74,7 @@
 .overviewGrid { display: flex; flex-direction: column; gap: 20px; }
 
 .statsRow {
-  display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px;
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px;
 }
 .statBox {
   background: var(--bg-card); border: 1px solid var(--border);

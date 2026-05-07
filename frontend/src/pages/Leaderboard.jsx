@@ -68,11 +68,6 @@ export default function Leaderboard() {
                           <span className={styles.podiumStatVal}>{p.solved}</span>
                           <span className={styles.podiumStatLabel}>solved</span>
                         </div>
-                        <div className={styles.podiumStatDivider} />
-                        <div className={styles.podiumStat}>
-                          <span className={styles.podiumStatVal}>{p.streak > 0 ? `${p.streak}d` : '—'}</span>
-                          <span className={styles.podiumStatLabel}>streak</span>
-                        </div>
                       </div>
                     </div>
                   );
@@ -87,7 +82,6 @@ export default function Leaderboard() {
                 <div className={styles.thRating}>Rating</div>
                 <div className={styles.thTitle}>Title</div>
                 <div className={styles.thSolved}>Solved</div>
-                <div className={styles.thStreak}>Streak</div>
               </div>
 
               {leaders.map((l, i) => {
@@ -117,11 +111,6 @@ export default function Leaderboard() {
                     <div className={styles.tdSolved}>
                       <span className={styles.solvedVal}>{l.solved}</span>
                     </div>
-                    <div className={styles.tdStreak}>
-                      {l.streak > 0
-                        ? <span className={styles.streakVal}>{l.streak}d</span>
-                        : <span className={styles.streakNone}>—</span>}
-                    </div>
                   </div>
                 );
               })}
@@ -134,6 +123,6 @@ export default function Leaderboard() {
         )}
       </div>
     </div>
-        </>
+    </>
   );
 }

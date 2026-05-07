@@ -253,14 +253,31 @@ export default function Profile() {
               })}
             </div>
           </div>
+
         </div>
 
         <div className={styles.midCol}>
-          <div className={styles.statsGrid}>
-            {stats.map(s => (
-              <div key={s.label} className={styles.statCard}>
-                <div className={styles.statVal} style={{ color: s.color }}>{s.val}</div>
-                <div className={styles.statLabel}>{s.label}</div>
+         
+
+
+<div className={styles.section}>
+            <h3 className={styles.sectionTitle}>Progress</h3>
+            {[
+              { label: 'Easy',   solved: easy,   total: availableCounts.Easy,   color: 'var(--green)'  },
+              { label: 'Medium', solved: medium, total: availableCounts.Medium, color: 'var(--orange)' },
+              { label: 'Hard',   solved: hard,   total: availableCounts.Hard,   color: 'var(--red)'    },
+            ].map(p => (
+              <div key={p.label} className={styles.progressRow}>
+                <div className={styles.progressMeta}>
+                  <span style={{ color: p.color, fontSize: '.82rem', fontWeight: 600 }}>{p.label}</span>
+                  <span className={styles.progCount}>{p.solved} / {p.total || '…'}</span>
+                </div>
+                <div className="progress-track">
+                  <div className="progress-fill" style={{
+                    width:      p.total ? `${Math.min(100, (p.solved / p.total) * 100)}%` : '0%',
+                    background: p.color,
+                  }} />
+                </div>
               </div>
             ))}
           </div>
@@ -331,48 +348,10 @@ export default function Profile() {
               <span>More</span>
             </div>
           </div>
-
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Suggested Problems</h3>
-            <div className={styles.suggestedList}>
-              {suggested.map(p => (
-                <Link key={p._id} to={`/problems/${p.slug}`} className={styles.suggestedItem}>
-                  <div className={styles.suggestedLeft}>
-                    <span className={styles.suggestedNum}>#{p.number}</span>
-                    <span className={styles.suggestedTitle}>{p.title}</span>
-                  </div>
-                  <span className={`badge ${diffBadge(p.difficulty)}`}>{p.difficulty}</span>
-                </Link>
-              ))}
-              {suggested.length === 0 && (
-                <p className="text-muted" style={{ fontSize: '.84rem', padding: '8px 0' }}>Loading…</p>
-              )}
-            </div>
-          </div>
         </div>
 
         <div className={styles.rightCol}>
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Progress</h3>
-            {[
-              { label: 'Easy',   solved: easy,   total: availableCounts.Easy,   color: 'var(--green)'  },
-              { label: 'Medium', solved: medium, total: availableCounts.Medium, color: 'var(--orange)' },
-              { label: 'Hard',   solved: hard,   total: availableCounts.Hard,   color: 'var(--red)'    },
-            ].map(p => (
-              <div key={p.label} className={styles.progressRow}>
-                <div className={styles.progressMeta}>
-                  <span style={{ color: p.color, fontSize: '.82rem', fontWeight: 600 }}>{p.label}</span>
-                  <span className={styles.progCount}>{p.solved} / {p.total || '…'}</span>
-                </div>
-                <div className="progress-track">
-                  <div className="progress-fill" style={{
-                    width:      p.total ? `${Math.min(100, (p.solved / p.total) * 100)}%` : '0%',
-                    background: p.color,
-                  }} />
-                </div>
-              </div>
-            ))}
-          </div>
+
 
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
